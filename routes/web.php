@@ -1,12 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\DashboardController;
 
-// Ruta de bienvenida / Login del Backoffice
-Route::get('/', function () {
-    return view('login'); // Vista del login del template corporativo
-});
+// Rutas de Autenticación Web
+Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Ruta protegida del Dashboard web[cite: 1]
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Ruta protegida por sesión de Laravel
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
