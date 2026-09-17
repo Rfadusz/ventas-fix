@@ -9,16 +9,15 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductoController extends Controller
 {
-    // Lógica para listar todos los registros[cite: 1]
+    // 2.1 Listar todos los productos
     public function index()
     {
         return response()->json(Producto::all(), 200);
     }
 
-    // LÓGICA MAESTRA PARA INSERTAR (POST)[cite: 1]
+    // 2.3 Agregar un nuevo producto
     public function store(Request $request)
     {
-        // 1. Validación estricta: Ningún dato vacío permitido[cite: 1]
         $validator = Validator::make($request->all(), [
             'sku' => 'required|string|unique:productos',
             'nombre' => 'required|string',
@@ -37,18 +36,14 @@ class ProductoController extends Controller
         }
 
         $data = $request->all();
-        
-        // 2. Regla de Negocio: Cálculo automático del precio con 19% de IVA[cite: 1]
+        // REGLA DE NEGOCIO: El precio de venta incluye el 19% de IVA[cite: 1]
         $data['precio_venta'] = $data['precio_neto'] * 1.19;
 
-        // 3. Inserción en la base de datos utilizando el modelo
         $producto = Producto::create($data);
-        
-        // 4. Respuesta HTTP correcta para inserción[cite: 2]
-        return response()->json($producto, 201); 
+        return response()->json($producto, 201); // 201 Created
     }
 
-    // Lógica para buscar por ID[cite: 1]
+    // 2.2 Obtener los datos de un producto por su ID[cite: 1]
     public function show($id)
     {
         $producto = Producto::find($id);
@@ -58,7 +53,7 @@ class ProductoController extends Controller
         return response()->json($producto, 200);
     }
 
-    // Lógica para actualizar[cite: 1]
+    // 2.4 Actualizar un producto por su id[cite: 1]
     public function update(Request $request, $id)
     {
         $producto = Producto::find($id);
@@ -66,33 +61,17 @@ class ProductoController extends Controller
             return response()->json(['error' => 'Producto no encontrado'], 404);
         }
 
-        $validator = Validator::make($request->all(), [
-            'sku' => 'sometimes|required|string|unique:productos,sku,'.$id,
-            'nombre' => 'sometimes|required|string',
-            'descripcion_corta' => 'sometimes|required|string',
-            'descripcion_larga' => 'sometimes|required|string',
-            'imagen' => 'sometimes|required|string',
-            'precio_neto' => 'sometimes|required|numeric',
-            'stock_actual' => 'sometimes|required|integer',
-            'stock_minimo' => 'sometimes|required|integer',
-            'stock_bajo' => 'sometimes|required|integer',
-            'stock_alto' => 'sometimes|required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
         $data = $request->all();
-        if(isset($data['precio_neto'])){
-            $data['precio_venta'] = $data['precio_neto'] * 1.19; // Mantener impuesto[cite: 1]
+        // Si actualizan el precio neto, recalculamos el precio de venta con IVA de forma automática
+        if (isset($data['precio_neto'])) {
+            $data['precio_venta'] = $data['precio_neto'] * 1.19;
         }
 
         $producto->update($data);
         return response()->json($producto, 200);
     }
 
-    // Lógica para eliminar de forma segura[cite: 1]
+    // 2.5 Eliminar un producto por su Id[cite: 1]
     public function destroy($id)
     {
         $producto = Producto::find($id);
@@ -100,8 +79,6 @@ class ProductoController extends Controller
             return response()->json(['error' => 'Producto no encontrado'], 404);
         }
         $producto->delete();
-        
-        // Respuesta eficiente sin contenido HTTP 204[cite: 2]
-        return response()->json(null, 204); 
+        return response()->json(null, 204); // 204 No Content para eliminación eficiente[cite: 2]
     }
 }

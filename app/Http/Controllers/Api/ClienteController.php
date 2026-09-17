@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
+use App\Services\SoftlandMockService; // Asegúrate de importar el servicio
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Services\SoftlandMockService; // Importar el componente de servicio
 
 class ClienteController extends Controller
 {
-    // ... (Mantén tu método index igual)
+    public function index()
+    {
+        return response()->json(Cliente::all(), 200);
+    }
 
-    // Inyección de dependencias en el método store
-    public function store(Request $request, SoftlandMockService $softlandService)
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'rut_empresa' => 'required|string|unique:clientes',
@@ -22,24 +24,25 @@ class ClienteController extends Controller
             'telefono' => 'required|string',
             'direccion' => 'required|string',
             'nombre_contacto' => 'required|string',
-            'email_contacto' => 'required|email'
+            'email_contacto' => 'required|email',
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
+        // Crear el cliente en la Base de Datos local
         $cliente = Cliente::create($request->all());
-        
-        // Consumo de servicio externo simulado de Softland[cite: 1, 2]
-        $syncResult = $softlandService->syncCliente($cliente);
 
-        // Agregamos el resultado de la integración a la respuesta JSON
+        // Instanciación directa del servicio Softland Mock
+        $softlandService = new SoftlandMockService();
+        $syncSoftland = $softlandService->syncCliente($cliente);
+
+        // Retornar respuesta unificada
         return response()->json([
+            'mensaje' => 'Cliente registrado con éxito en VentasFix',
             'cliente' => $cliente,
-            'softland_sync' => $syncResult
-        ], 201); 
+            'integracion_softland' => $syncSoftland
+        ], 201);
     }
-
-    // ... (Mantén los métodos show, update y destroy que ya tenías)
 }

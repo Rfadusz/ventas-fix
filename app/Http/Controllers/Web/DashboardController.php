@@ -10,14 +10,14 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    // Requerimiento 4: Dashboard con contadores
+    // Método que gestiona el Dashboard web y los contadores obligatorios[cite: 1]
     public function index()
     {
-        $totalUsuarios = Usuario::count(); // 4.1 Información de usuarios[cite: 1]
-        $totalProductos = Producto::count(); // 4.2 Información de productos[cite: 1]
-        $totalClientes = Cliente::count(); // 4.3 Información de clientes[cite: 1]
+        $totalUsuarios = Usuario::count();   // Conteo de usuarios[cite: 1]
+        $totalProductos = Producto::count(); // Conteo de productos[cite: 1]
+        $totalClientes = Cliente::count();   // Conteo de clientes[cite: 1]
 
-        // Retorna la vista inyectando las variables calculadas
+        // Retorna la vista del template integrada en Laravel con los datos
         return view('dashboard', compact('totalUsuarios', 'totalProductos', 'totalClientes'));
     }
 }
